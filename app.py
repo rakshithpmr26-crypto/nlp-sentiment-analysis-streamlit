@@ -6,29 +6,41 @@ model = joblib.load("best_sentiment_model.pkl")
 vectorizer = joblib.load("tfidf_vectorizer.pkl")
 
 # page config
-st.set_page_config(page_title="Amazon Sentiment Analysis", page_icon="🛒", layout="centered")
+st.set_page_config(
+    page_title="Sentiment Analysis App",
+    page_icon="💬",
+    layout="centered"
+)
 
 # title
-st.title("🛒 Amazon Sentiment Analysis App")
-st.write("Analyze Amazon product reviews using Machine Learning 🤖")
+st.title("💬 Sentiment Analysis App")
+st.write("Enter your text and get sentiment with rating score 🔥")
 
 # input
-review = st.text_area("Enter Amazon Review 👇", height=150)
+review = st.text_area("Enter your text 👇", height=150)
 
-# predict button
-if st.button("Predict Sentiment 🚀"):
+# predict
+if st.button("Analyze Sentiment 🚀"):
 
     if review.strip() == "":
-        st.warning("⚠️ Please enter a review")
+        st.warning("⚠️ Please enter text")
     else:
-        # transform
+        # vectorize
         review_vector = vectorizer.transform([review])
 
-        # prediction
+        # probability
+        probs = model.predict_proba(review_vector)[0]
+
+        negative_score = probs[0] * 100
+        positive_score = probs[1] * 100
+
         prediction = model.predict(review_vector)[0]
 
         # output
-        if str(prediction).lower() in ["positive", "1", "pos"]:
-            st.success("🟢 Positive Review")
+        if str(prediction).lower() in ["positive", "pos", "1"]:
+            st.success(f"🟢 Positive Sentiment")
+            st.metric("Rating Score", f"{positive_score:.2f}% 👍")
+
         else:
-            st.error("🔴 Negative Review")
+            st.error(f"🔴 Negative Sentiment")
+            st.metric("Rating Score", f"{negative_score:.2f}% 👎")
