@@ -1,49 +1,34 @@
 import streamlit as st
 import joblib
 
-# -------------------------------
-# LOAD MODEL & VECTORIZER
-# -------------------------------
+# load model and vectorizer
 model = joblib.load("best_sentiment_model.pkl")
 vectorizer = joblib.load("tfidf_vectorizer.pkl")
 
-# -------------------------------
-# PAGE CONFIG
-# -------------------------------
+# page config
 st.set_page_config(
     page_title="Sentiment Analysis App",
     page_icon="💬",
     layout="centered"
 )
 
-# -------------------------------
-# TITLE
-# -------------------------------
+# title
 st.title("Sentiment Analysis App")
-st.write("Enter text and get sentiment prediction with explanation")
 
-# -------------------------------
-# INPUT
-# -------------------------------
+# input
 review = st.text_area("Enter your review", height=150)
 
-# -------------------------------
-# PREDICT BUTTON
-# -------------------------------
+# predict
 if st.button("Analyze Sentiment"):
 
     if review.strip() == "":
         st.warning("Please enter a review")
     else:
 
-        # -------------------------------
-        # TRANSFORM INPUT
-        # -------------------------------
+        # transform input
         review_vector = vectorizer.transform([review])
 
-        # -------------------------------
-        # PREDICTION + PROBABILITY
-        # -------------------------------
+        # prediction
         probs = model.predict_proba(review_vector)[0]
         classes = model.classes_
         prob_dict = dict(zip(classes, probs))
@@ -61,9 +46,7 @@ if st.button("Analyze Sentiment"):
 
         prediction = model.predict(review_vector)[0]
 
-        # -------------------------------
-        # OUTPUT RESULT
-        # -------------------------------
+        # output ONLY sentiment + score
         if str(prediction).lower() in ["positive", "pos", "1"]:
             st.success("Positive Sentiment")
             st.metric("Positive Score", f"{positive_score:.2f}%")
@@ -72,45 +55,3 @@ if st.button("Analyze Sentiment"):
             st.error("Negative Sentiment")
             st.metric("Negative Score", f"{negative_score:.2f}%")
             st.metric("Positive Score", f"{positive_score:.2f}%")
-
-        # -------------------------------
-        # EXPLANATION SECTION (FIXED PROPERLY)
-        # -------------------------------
-        st.subheader("Why this prediction?")
-
-        feature_names = vectorizer.get_feature_names_out()
-        coefs = model.coef_[0]
-
-        words = review.lower().split()
-
-        feature_index = {word: i for i, word in enumerate(feature_names)}
-
-        positive_words = []
-        negative_words = []
-
-        for word in words:
-            if word in feature_index:
-                idx = feature_index[word]
-                weight = coefs[idx]
-
-                # FIXED LOGIC (NO INVERSION BUG)
-                if weight > 0:
-                    positive_words.append(word)
-                elif weight < 0:
-                    negative_words.append(word)
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.write("Positive words")
-            if positive_words:
-                st.write(positive_words)
-            else:
-                st.write("None detected")
-
-        with col2:
-            st.write("Negative words")
-            if negative_words:
-                st.write(negative_words)
-            else:
-                st.write("None detected")
