@@ -1,20 +1,34 @@
 import streamlit as st
 import joblib
 
+# load model and vectorizer
 model = joblib.load("best_sentiment_model.pkl")
 vectorizer = joblib.load("tfidf_vectorizer.pkl")
 
-st.title("Sentiment Analysis App")
+# page config
+st.set_page_config(page_title="Amazon Sentiment Analysis", page_icon="🛒", layout="centered")
 
-review = st.text_area("Enter Review")
+# title
+st.title("🛒 Amazon Sentiment Analysis App")
+st.write("Analyze Amazon product reviews using Machine Learning 🤖")
 
-if st.button("Predict"):
+# input
+review = st.text_area("Enter Amazon Review 👇", height=150)
 
-    review_vector = vectorizer.transform([review])
+# predict button
+if st.button("Predict Sentiment 🚀"):
 
-    prediction = model.predict(review_vector)
-
-    if prediction[0].lower() == "positive":
-        st.success(f"Predicted Sentiment: {prediction[0]}")
+    if review.strip() == "":
+        st.warning("⚠️ Please enter a review")
     else:
-        st.error(f"Predicted Sentiment: {prediction[0]}")
+        # transform
+        review_vector = vectorizer.transform([review])
+
+        # prediction
+        prediction = model.predict(review_vector)[0]
+
+        # output
+        if str(prediction).lower() in ["positive", "1", "pos"]:
+            st.success("🟢 Positive Review")
+        else:
+            st.error("🔴 Negative Review")
