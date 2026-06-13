@@ -19,21 +19,21 @@ st.set_page_config(
 # -------------------------------
 # TITLE
 # -------------------------------
-st.title("💬 Sentiment Analysis App")
-st.write("Enter text and get sentiment with correct confidence score 🔥")
+st.title("Sentiment Analysis App")
+st.write("Enter text to get sentiment prediction with confidence score")
 
 # -------------------------------
 # INPUT
 # -------------------------------
-review = st.text_area("Enter your review 👇", height=150)
+review = st.text_area("Enter your review", height=150)
 
 # -------------------------------
 # PREDICT BUTTON
 # -------------------------------
-if st.button("Analyze Sentiment 🚀"):
+if st.button("Analyze Sentiment"):
 
     if review.strip() == "":
-        st.warning("⚠️ Please enter a review")
+        st.warning("Please enter a review")
     else:
 
         # transform input
@@ -42,13 +42,12 @@ if st.button("Analyze Sentiment 🚀"):
         # probabilities
         probs = model.predict_proba(review_vector)[0]
 
-        # correct class mapping (IMPORTANT FIX 🔥)
+        # class mapping (IMPORTANT)
         classes = model.classes_
-
         prob_dict = dict(zip(classes, probs))
 
         # -------------------------------
-        # SAFE EXTRACTION (FIXED LOGIC)
+        # SAFE SCORE EXTRACTION
         # -------------------------------
         positive_score = 0
         negative_score = 0
@@ -66,14 +65,14 @@ if st.button("Analyze Sentiment 🚀"):
         prediction = model.predict(review_vector)[0]
 
         # -------------------------------
-        # OUTPUT
+        # OUTPUT (NO EMOJIS)
         # -------------------------------
         if str(prediction).lower() in ["positive", "pos", "1"]:
-            st.success("🟢 Positive Sentiment")
-            st.metric("Positive Score", f"{positive_score:.2f}% 👍")
-            st.metric("Negative Score", f"{negative_score:.2f}% 👎")
+            st.success("Positive Sentiment")
+            st.metric("Positive Score", f"{positive_score:.2f}%")
+            st.metric("Negative Score", f"{negative_score:.2f}%")
 
         else:
-            st.error("🔴 Negative Sentiment")
-            st.metric("Negative Score", f"{negative_score:.2f}% 👎")
-            st.metric("Positive Score", f"{positive_score:.2f}% 👍")
+            st.error("Negative Sentiment")
+            st.metric("Negative Score", f"{negative_score:.2f}%")
+            st.metric("Positive Score", f"{positive_score:.2f}%")
