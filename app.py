@@ -20,7 +20,7 @@ st.set_page_config(
 # TITLE
 # -------------------------------
 st.title("Sentiment Analysis App")
-st.write("Enter text to get sentiment prediction with confidence score")
+st.write("Enter text and get sentiment with explanation")
 
 # -------------------------------
 # INPUT
@@ -36,19 +36,18 @@ if st.button("Analyze Sentiment"):
         st.warning("Please enter a review")
     else:
 
-        # transform input
+        # -------------------------------
+        # TRANSFORM INPUT
+        # -------------------------------
         review_vector = vectorizer.transform([review])
 
-        # probabilities
+        # -------------------------------
+        # PREDICTION + PROBABILITY
+        # -------------------------------
         probs = model.predict_proba(review_vector)[0]
-
-        # class mapping (IMPORTANT)
         classes = model.classes_
         prob_dict = dict(zip(classes, probs))
 
-        # -------------------------------
-        # SAFE SCORE EXTRACTION
-        # -------------------------------
         positive_score = 0
         negative_score = 0
 
@@ -57,22 +56,58 @@ if st.button("Analyze Sentiment"):
 
             if label_str in ["positive", "pos", "1", "1.0"]:
                 positive_score = prob * 100
-
             elif label_str in ["negative", "neg", "0", "0.0"]:
                 negative_score = prob * 100
 
-        # final prediction
         prediction = model.predict(review_vector)[0]
 
         # -------------------------------
-        # OUTPUT (NO EMOJIS)
+        # OUTPUT RESULT
         # -------------------------------
         if str(prediction).lower() in ["positive", "pos", "1"]:
             st.success("Positive Sentiment")
             st.metric("Positive Score", f"{positive_score:.2f}%")
             st.metric("Negative Score", f"{negative_score:.2f}%")
-
         else:
             st.error("Negative Sentiment")
             st.metric("Negative Score", f"{negative_score:.2f}%")
             st.metric("Positive Score", f"{positive_score:.2f}%")
+
+        # -------------------------------
+        # EXPLANATION SECTION (WHY THIS RESULT)
+        # -------------------------------
+        st.subheader("Why this prediction?")
+
+        feature_names = vectorizer.get_feature_names_out()
+        coefs = model.coef_[0]
+
+        words = review.lower().split()
+
+        positive_words = []
+        negative_words = []
+
+        for word in words:
+            if word in feature_names:
+                idx = list(feature_names).tolist().index(word)
+                weight = coefs[idx]
+
+                if weight > 0:
+                    positive_words.append(word)
+                elif weight < 0:
+                    negative_words.append(word)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Positive words")
+            if positive_words:
+                st.write(positive_words)
+            else:
+                st.write("None detected")
+
+        with col2:
+            st.write("Negative words")
+            if negative_words:
+                st.write(negative_words)
+            else:
+                st.write("None detected")
