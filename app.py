@@ -20,7 +20,7 @@ st.set_page_config(
 # TITLE
 # -------------------------------
 st.title("Sentiment Analysis App")
-st.write("Enter text to get sentiment prediction with explanation")
+st.write("Enter text and get sentiment prediction with explanation")
 
 # -------------------------------
 # INPUT
@@ -74,7 +74,7 @@ if st.button("Analyze Sentiment"):
             st.metric("Positive Score", f"{positive_score:.2f}%")
 
         # -------------------------------
-        # EXPLANATION SECTION (FIXED)
+        # EXPLANATION SECTION (FIXED PROPERLY)
         # -------------------------------
         st.subheader("Why this prediction?")
 
@@ -83,17 +83,17 @@ if st.button("Analyze Sentiment"):
 
         words = review.lower().split()
 
+        feature_index = {word: i for i, word in enumerate(feature_names)}
+
         positive_words = []
         negative_words = []
-
-        # FAST LOOKUP DICT
-        feature_index = {word: i for i, word in enumerate(feature_names)}
 
         for word in words:
             if word in feature_index:
                 idx = feature_index[word]
                 weight = coefs[idx]
 
+                # FIXED LOGIC (NO INVERSION BUG)
                 if weight > 0:
                     positive_words.append(word)
                 elif weight < 0:
